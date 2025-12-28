@@ -11,7 +11,8 @@ export const authoption: NextAuthOptions = {
         password: {},
       },
       authorize: async (credentials) => {
-        const API_URL = process.env.NEXT_PUBLIC_API;
+        const API_URL =
+          process.env.NEXT_PUBLIC_API || 'http://localhost:3000/api';
         const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           body: JSON.stringify({
