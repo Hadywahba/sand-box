@@ -11,11 +11,12 @@ export const authoption: NextAuthOptions = {
         password: {},
       },
       authorize: async (credentials) => {
-        const API_URL = process.env.NEXT_PUBLIC_API || 
-          (process.env.NODE_ENV === 'production' 
-            ? 'https://sand-box-mu.vercel.app/api' 
+        const API_URL =
+          process.env.NEXT_PUBLIC_API ||
+          (process.env.NODE_ENV === 'production'
+            ? 'https://sand-box-mu.vercel.app/api'
             : 'http://localhost:3000/api');
-        
+
         try {
           const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
@@ -25,12 +26,16 @@ export const authoption: NextAuthOptions = {
             }),
             headers: { 'Content-type': 'application/json' },
           });
-          
+
           if (!response.ok) {
-            console.error('Login API response not ok:', response.status, response.statusText);
+            console.error(
+              'Login API response not ok:',
+              response.status,
+              response.statusText,
+            );
             throw new Error('Authentication failed');
           }
-          
+
           const payload: ApiResponse<LoginResponse> = await response.json();
           if ('code' in payload) {
             throw new Error(payload.message);
