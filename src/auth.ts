@@ -11,24 +11,39 @@ export const authoption: NextAuthOptions = {
         password: {},
       },
       authorize: async (credentials) => {
-        const API_URL = process.env.NEXT_PUBLIC_API;
-        const response = await fetch(`${API_URL}/auth/login`, {
-          method: 'POST',
-          body: JSON.stringify({
-            email: credentials?.email,
-            password: credentials?.password,
-          }),
-          headers: { 'Content-type': 'application/json' },
-        });
-        const payload: ApiResponse<LoginResponse> = await response.json();
-        if ('code' in payload) {
-          throw new Error(payload.message);
+        const API_URL = process.env.NEXT_PUBLIC_API || 
+          (process.env.NODE_ENV === 'production' 
+            ? 'https://sand-box-mu.vercel.app/api' 
+            : 'http://localhost:3000/api');
+        
+        try {
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: credentials?.email,
+              password: credentials?.password,
+            }),
+            headers: { 'Content-type': 'application/json' },
+          });
+          
+          if (!response.ok) {
+            console.error('Login API response not ok:', response.status, response.statusText);
+            throw new Error('Authentication failed');
+          }
+          
+          const payload: ApiResponse<LoginResponse> = await response.json();
+          if ('code' in payload) {
+            throw new Error(payload.message);
+          }
+          return {
+            id: payload.user._id,
+            accesstoken: payload.token,
+            user: payload.user,
+          };
+        } catch (error) {
+          console.error('Login error:', error);
+          throw new Error('Invalid email or password');
         }
-        return {
-          id: payload.user._id,
-          accesstoken: payload.token,
-          user: payload.user,
-        };
       },
     }),
   ],
